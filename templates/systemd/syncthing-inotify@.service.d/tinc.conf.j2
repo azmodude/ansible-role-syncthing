@@ -1,0 +1,8 @@
+# {{ ansible_managed }}}
+[Service]
+ExecStart=
+{% if ansible_azmoint is defined %}
+ExecStart={{syncthing_location}}/syncthing-inotify -logflags=0 -target=http://{{ ansible_azmoint.ipv4.address }}:{{syncthing_webguiport}}
+{% else %}
+ExecStart={{syncthing_location}}/syncthing-inotify -logflags=0 -target=http://127.0.0.1:{{syncthing_webguiport}}
+{% endif %}

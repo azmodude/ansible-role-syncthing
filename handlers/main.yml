@@ -1,0 +1,14 @@
+---
+- name: Reload systemd
+  shell: systemctl daemon-reload
+- name: Restart syncthing
+  service: 
+    name: "{{item}}@{{syncthing_user}}" 
+    state: restarted
+  with_items:
+    - syncthing
+    - syncthing-inotify
+- name: Reload firewalld
+  service:
+    name: firewalld
+    state: reloaded

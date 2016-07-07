@@ -1,0 +1,8 @@
+# {{ ansible_managed }}}
+[Service]
+ExecStart=
+{% if ansible_azmoint is defined %}
+ExecStart={{syncthing_location}}/syncthing -no-browser -no-restart -logflags=0 -gui-address={{ ansible_azmoint.ipv4.address }}:{{syncthing_webguiport}}
+{% else %}
+ExecStart={{syncthing_location}}/syncthing -no-browser -no-restart -logflags=0 -gui-address=127.0.0.1:{{syncthing_webguiport}}
+{% endif %}

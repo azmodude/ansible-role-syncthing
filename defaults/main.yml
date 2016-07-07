@@ -1,0 +1,18 @@
+architecture:
+  x86_64: amd64
+  i386:   386
+  armv5l: armv5
+  armv6l: armv6
+  armv7l: armv7
+
+syncthing_user: azmo
+syncthing_version: 0.13.10
+syncthing_inotify_version: 0.8.2
+syncthing_location: /usr/local/bin
+syncthing_webguiport: 8384
+
+syncthing_url: https://github.com/syncthing/syncthing/releases/download/v{{syncthing_version}}/syncthing-{{ansible_system|lower}}-{{architecture[ansible_architecture]}}-v{{syncthing_version}}.tar.gz
+syncthing_inotify_url: https://github.com/syncthing/syncthing-inotify/releases/download/v{{syncthing_inotify_version}}/syncthing-inotify-{{ansible_system|lower}}-{{architecture[ansible_architecture]}}-v{{syncthing_inotify_version}}.tar.gz
+syncthing_dir: syncthing-{{ansible_system|lower}}-{{architecture[ansible_architecture]}}-v{{syncthing_version}}
+# not needed for now - synthing-inotify does not extract into a subdirectory
+syncthing_inotify_dir: syncthing-inotify-{{ansible_system|lower}}-{{architecture[ansible_architecture]}}-v{{syncthing_version}}

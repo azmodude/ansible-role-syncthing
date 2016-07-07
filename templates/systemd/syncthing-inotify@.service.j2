@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Syncthing Inotify File Watcher for %I
+Documentation=https://github.com/syncthing/syncthing-inotify/blob/master/README.md
+After=network.target syncthing@.service
+Requires=syncthing@.service
+
+[Service]
+User=%i
+ExecStart={{syncthing_location}}/syncthing-inotify -logflags=0
+SuccessExitStatus=2
+RestartForceExitStatus=3
+Restart=on-failure
+ProtectSystem=full
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target

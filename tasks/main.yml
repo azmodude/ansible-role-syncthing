@@ -1,0 +1,128 @@
+---
+# Fedora and CentOS need manual installation
+- block:
+  - name: Syncthing| Check version
+    shell: "{{syncthing_location}}/syncthing --version | awk '{ print $2 }' | cut -c 2-"
+    changed_when: false
+    ignore_errors: true
+    register: version
+
+  - block:
+    - name: Syncthing| Create location folder
+      file: 
+        path: "{{syncthing_location}}"
+        state: directory
+    - name: Syncthing| Download and extract
+      unarchive: 
+        src: "{{syncthing_url}}"
+        dest: /tmp
+        creates: /tmp/{{syncthing_dir}}
+        copy: no
+    - name: Syncthing| Copy executable to final directory
+      copy: 
+        src: /tmp/{{syncthing_dir}}/syncthing
+        remote_src: True
+        dest: "{{syncthing_location}}/syncthing"
+        mode: 755
+    when: version|failed or version.stdout != "{{syncthing_version}}"
+
+  - name: Syncthing | Create service file
+    template: >-
+      src=systemd/syncthing@.service.j2
+      dest=/etc/systemd/system/syncthing@.service
+    notify:
+      - Reload systemd
+      - Restart syncthing
+
+  - name: Syncthing-inotify| Check version
+    shell: "{{syncthing_location}}/syncthing-inotify --version | awk '{ print $2 }' | cut -c 2-"
+    changed_when: false
+    ignore_errors: true
+    register: version
+
+  - block:
+    - name: Syncthing-inotify| Create location folder
+      file: 
+        path: "{{syncthing_location}}" 
+        state: directory
+
+    - name: Syncthing-inotify| Download and extract
+      unarchive: 
+        src: "{{syncthing_inotify_url}}"
+        dest: /tmp
+        creates: /tmp/syncthing-inotify
+        copy: no
+
+    - name: Syncthing-inotify| Copy executable to location dir
+      copy: 
+        src: /tmp/syncthing-inotify
+        remote_src: True
+        dest: "{{syncthing_location}}/syncthing-inotify"
+        mode: 755
+    when: version|failed or version.stdout != "{{syncthing_inotify_version}}"
+
+  - name: Syncthing-inotify | Create service file
+    template: 
+      src: systemd/syncthing-inotify@.service.j2
+      dest: /etc/systemd/system/syncthing-inotify@.service
+    notify:
+      - Reload systemd
+      - Restart syncthing
+  when: ansible_distribution in ('CentOS', 'Fedora')
+
+- block:
+  - name: Create service file override directories
+    file: 
+      path: "{{item}}" 
+      state: directory 
+      mode: 0755 
+      owner: root 
+      group: root
+    with_items:
+      - /etc/systemd/system/syncthing@.service.d
+      - /etc/systemd/system/syncthing-inotify@.service.d
+  
+  - name: Create service file override
+    template: >
+      src={{ item.src }}
+      dest={{ item.dest }}
+    with_items:
+      - { src: systemd/syncthing@.service.d/tinc.conf.j2,
+          dest: /etc/systemd/system/syncthing@.service.d/tinc.conf }
+      - { src: systemd/syncthing-inotify@.service.d/tinc.conf.j2,
+          dest: /etc/systemd/system/syncthing-inotify@.service.d/tinc.conf }
+    notify:
+      - Reload systemd
+      - Restart syncthing
+  when: ansible_azmoint is defined
+
+- block:
+  - name: Check for firewalld
+    shell: systemctl is-active firewalld
+    register: firewalld_running
+    changed_when: false
+
+  - block:
+    - name: Template firewalld service file
+      template: 
+        src: firewalld/syncthing.xml.j2
+        dest: /etc/firewalld/services/syncthing.xml
+        mode: 0644
+        owner: root
+        group: root
+      notify: Reload firewalld
+    - meta: flush_handlers
+    - name: Enable syncthing service in firewalld
+      firewalld:
+        service: syncthing
+        state: enabled
+        immediate: yes
+        permanent: yes
+    when: "'active' in firewalld_running.stdout"
+  when: ansible_distribution in ('CentOS', 'Fedora')
+
+- name: Enable and start syncthing
+  service: 
+    name: syncthing@{{syncthing_user}} 
+    enabled: yes 
+    state: started
