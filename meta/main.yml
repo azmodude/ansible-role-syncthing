@@ -1,0 +1,22 @@
+galaxy_info:
+  author: Gordon Schulz
+  description: Install syncthing and syncthing-inotify onto a host.
+
+  license: license (BSD)
+
+  min_ansible_version: 2.0
+
+  platforms:
+  - name: EL
+    versions:
+      - all
+  - name: Fedora
+    versions:
+      - all
+  - name: Archlinux
+
+  galaxy_tags:
+      - network
+      - installer
+
+dependencies: []
