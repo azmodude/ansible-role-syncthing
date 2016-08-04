@@ -6,8 +6,8 @@ architecture:
   armv7l: armv7
 
 syncthing_user: azmo
-syncthing_version: 0.13.10
-syncthing_inotify_version: 0.8.2
+syncthing_version: 0.14.3
+syncthing_inotify_version: 0.8.3
 syncthing_location: /usr/local/bin
 syncthing_webguiport: 8384
 
